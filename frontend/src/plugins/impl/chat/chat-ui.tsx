@@ -166,16 +166,38 @@ export const Chatbot: React.FC<Props> = (props) => {
   };
 
   const renderMessage = (message: Message) => {
+    console.log("Rendering message:", {
+      role: message.role,
+      content: message.content,
+      attachments: message.experimental_attachments
+    });
+
     const content =
       message.role === "assistant"
         ? renderHTML({ html: message.content })
         : message.content;
 
+    const hasCustomStyle = message.role === "assistant" && message.content.startsWith("{{custom}}");
+    if (hasCustomStyle) {
+      console.log("Custom message style detected:", message.content);
+    }
+
     const attachments = message.experimental_attachments;
+
+    // CUSTOM CHAT FORMATTING: Extract any custom styling metadata from the message
+    const customStyle = hasCustomStyle
+      ? "bg-green-200 text-green-800" // Example custom style
+      : message.role === "assistant"
+      ? "bg-[var(--slate-4)] text-[var(--slate-12)]"
+      : "bg-[var(--sky-11)] text-[var(--slate-1)]";
 
     return (
       <>
-        {content}
+        <div className={cn("max-w-[80%] p-3 rounded-lg", customStyle)}>
+          <p className={cn(message.role === "user" && "whitespace-pre-wrap")}>
+            {content}
+          </p>
+        </div>
         {attachments && attachments.length > 0 && (
           <div className="mt-2">
             {attachments.map((attachment, index) => (
